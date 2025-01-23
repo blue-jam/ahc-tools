@@ -1,5 +1,5 @@
 mod download;
-pub(crate) mod init;
+mod init;
 
 use anyhow::{anyhow, Result};
 use clap::{Parser, Subcommand};
@@ -39,14 +39,6 @@ fn run_command(cli: Cli) -> Result<()> {
     Ok(())
 }
 
-fn load_config(file_name: &str) -> Result<Config> {
-    let content = std::fs::read_to_string(file_name)
-        .map_err(|e| anyhow!("Failed to read config file: {}", e))?;
-    let config: Config =
-        toml::from_str(&content).map_err(|e| anyhow!("Failed to parse config file: {}", e))?;
-    Ok(config)
-}
-
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
@@ -64,8 +56,21 @@ enum Commands {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Config {
+    general: General,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct General {
     name: String,
     problem_url: String,
+}
+
+fn load_config(file_name: &str) -> Result<Config> {
+    let content = std::fs::read_to_string(file_name)
+        .map_err(|e| anyhow!("Failed to read config file: {}", e))?;
+    let config: Config =
+        toml::from_str(&content).map_err(|e| anyhow!("Failed to parse config file: {}", e))?;
+    Ok(config)
 }
 
 #[cfg(test)]
@@ -113,6 +118,7 @@ mod tests {
         let config_file_path = temp_dir.path().join("ahc_tools.toml");
         let config = format!(
             r#"
+                [general]
                 name = "test_contest"
                 problem_url = "{}"
             "#,

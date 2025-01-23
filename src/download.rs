@@ -22,7 +22,7 @@ pub(crate) fn download(args: DownloadArgs, config: Config) -> Result<()> {
         let url = if let Some(url) = args.url {
             url
         } else {
-            config.problem_url
+            config.general.problem_url
         };
 
         let html = fetch_html(&url)?;
@@ -152,7 +152,6 @@ mod tests {
         unzip_file(cursor, output_path).unwrap();
 
         let file_path = dir.path().join("tools/mock.txt");
-        eprintln!("{:?}", file_path);
         assert!(file_path.exists());
 
         let mut file = std::fs::File::open(file_path).unwrap();

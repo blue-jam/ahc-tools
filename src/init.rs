@@ -1,4 +1,4 @@
-use crate::Config;
+use crate::{Config, General};
 use anyhow::{anyhow, Context, Result};
 use clap::Args;
 use colored::Colorize;
@@ -21,8 +21,10 @@ pub(crate) fn init(args: InitArgs, file_name: &str) -> Result<()> {
     }
 
     let config = Config {
-        name: args.name.clone(),
-        problem_url: build_default_problem_url(&args.name)?,
+        general: General {
+            name: args.name.clone(),
+            problem_url: build_default_problem_url(&args.name)?,
+        },
     };
     let config_str = toml::to_string(&config)
         .context(format!("Failed to serialize config to TOML: {:?}", config))?;
