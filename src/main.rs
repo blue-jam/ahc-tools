@@ -1,5 +1,7 @@
+mod commit;
 mod download;
 mod init;
+mod pahcer;
 
 use anyhow::{anyhow, Result};
 use clap::{Parser, Subcommand};
@@ -34,6 +36,9 @@ fn run_command(cli: Cli) -> Result<()> {
         Commands::Download(args) => {
             download::download(args, config.unwrap())?;
         }
+        Commands::Commit(args) => {
+            commit::commit(args, config.unwrap())?;
+        }
     }
 
     Ok(())
@@ -52,6 +57,7 @@ struct Cli {
 enum Commands {
     Init(init::InitArgs),
     Download(download::DownloadArgs),
+    Commit(commit::CommitArgs),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -71,71 +77,4 @@ fn load_config(file_name: &str) -> Result<Config> {
     let config: Config =
         toml::from_str(&content).map_err(|e| anyhow!("Failed to parse config file: {}", e))?;
     Ok(config)
-}
-
-#[cfg(test)]
-mod tests {
-    use assert_cmd::Command;
-    use std::fs;
-
-    #[test]
-    fn init() {
-        let temp_dir = tempfile::tempdir().unwrap();
-        let config_file_path = temp_dir.path().join("ahc_tools.toml");
-
-        let mut cmd = Command::cargo_bin("ahc").unwrap();
-        cmd.arg("init")
-            .arg("test_project")
-            .current_dir(temp_dir.path())
-            .assert()
-            .success();
-
-        assert!(config_file_path.exists());
-        let content = fs::read_to_string(config_file_path).unwrap();
-        assert!(content.contains("test_project"));
-    }
-
-    #[test]
-    fn download() {
-        let mut server = mockito::Server::new();
-        let html_mock = server
-            .mock("GET", "/")
-            .with_status(200)
-            .with_header("content-type", "text/html")
-            .with_body(format!(
-                "<a href=\"{}/tools.zip\">ローカル版</a>",
-                server.url()
-            ))
-            .create();
-        let zip_mock = server
-            .mock("GET", "/tools.zip")
-            .with_status(200)
-            .with_header("content-type", "application/zip")
-            .with_body_from_file("src/tests/fixtures/test_archive.zip")
-            .create();
-
-        let temp_dir = tempfile::tempdir().unwrap();
-        let config_file_path = temp_dir.path().join("ahc_tools.toml");
-        let config = format!(
-            r#"
-                [general]
-                name = "test_contest"
-                problem_url = "{}"
-            "#,
-            server.url()
-        );
-        fs::write(&config_file_path, config).unwrap();
-
-        let mut cmd = Command::cargo_bin("ahc").unwrap();
-        cmd.arg("download")
-            .current_dir(temp_dir.path())
-            .assert()
-            .success();
-
-        let file_path = temp_dir.path().join("tools/mock.txt");
-        assert!(file_path.exists());
-
-        html_mock.assert();
-        zip_mock.assert();
-    }
 }

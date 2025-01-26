@@ -1,0 +1,26 @@
+{
+  "start_time": "2025-01-25T22:51:01.346620+09:00",
+  "case_count": 2,
+  "total_score": 101781,
+  "total_score_log10": 9.413255449362683,
+  "total_relative_score": 200.0,
+  "max_execution_time": 0.217880916,
+  "comment": "",
+  "wa_seeds": [],
+  "cases": [
+    {
+      "seed": 0,
+      "score": 50563,
+      "relative_score": 100.0,
+      "execution_time": 0.217880916,
+      "error_message": ""
+    },
+    {
+      "seed": 1,
+      "score": 51218,
+      "relative_score": 100.0,
+      "execution_time": 0.217871625,
+      "error_message": ""
+    }
+  ]
+}
